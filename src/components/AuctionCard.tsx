@@ -86,13 +86,21 @@ const AuctionCard: React.FC<AuctionCardProps> = ({ auction }) => {
             </div>
           </div>
           
-          <Link 
-            to={`/auctions/${auction.id}`}
-            className="flex items-center gap-1 text-sm font-bold text-neutral-900 hover:gap-2 transition-all"
-          >
-            View
-            <ArrowRight size={16} />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link 
+              to={`/auctions/${auction.id}`}
+              className="px-4 py-2 bg-neutral-100 text-neutral-900 text-xs font-bold rounded-xl hover:bg-neutral-200 transition-all"
+            >
+              Enquiry
+            </Link>
+            <Link 
+              to={`/auctions/${auction.id}`}
+              className="flex items-center gap-1 text-sm font-bold text-neutral-900 hover:gap-2 transition-all p-2"
+            >
+              View
+              <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
       </div>
     </motion.div>

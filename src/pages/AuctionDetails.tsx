@@ -380,6 +380,44 @@ export default function AuctionDetails() {
               <p className="text-[10px] text-center text-neutral-400 uppercase font-bold tracking-widest">
                 By bidding, you agree to our Terms of Service
               </p>
+              
+              <div className="pt-6 border-t border-neutral-100">
+                {!showInquiryInput ? (
+                  <button 
+                    onClick={() => setShowInquiryInput(true)}
+                    className="w-full py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-700 text-sm font-bold flex items-center justify-center gap-2 hover:bg-neutral-100 hover:border-neutral-900 transition-all group"
+                  >
+                    <MessageSquare size={16} className="text-neutral-400 group-hover:text-neutral-900 transition-colors" /> 
+                    Ask Institution a Question
+                  </button>
+                ) : (
+                  <div className="space-y-3">
+                    <textarea 
+                      autoFocus
+                      placeholder="Ask a question about this asset..."
+                      className="w-full bg-neutral-50 border border-neutral-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900/10 h-24 resize-none"
+                      value={inquiryMessage}
+                      onChange={e => setInquiryMessage(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setShowInquiryInput(false)}
+                        className="flex-1 py-2 text-xs font-bold text-neutral-500"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        disabled={isInquiring || !inquiryMessage.trim()}
+                        onClick={handleSendInquiry}
+                        className="flex-2 btn-primary !py-2 text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {inquirySuccess ? <Check size={14} /> : <Send size={14} />}
+                        {inquirySuccess ? "Message Sent!" : "Send Inquiry"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="mt-8 pt-8 border-t border-neutral-100">
@@ -410,54 +448,18 @@ export default function AuctionDetails() {
             </div>
           </div>
 
-          <div className="bg-emerald-50 border border-emerald-100 rounded-[2rem] p-6 space-y-4">
-            <div className="flex gap-4">
-              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 flex-shrink-0">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-[2rem] p-6 space-y-4 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
+            <div className="flex gap-4 relative z-10">
+              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-emerald-400 flex-shrink-0">
                 <ShieldCheck size={20} />
               </div>
               <div>
-                <h4 className="font-bold text-sm text-emerald-900">Bidzone Protection</h4>
-                <p className="text-xs text-emerald-700 mt-1">
+                <h4 className="font-bold text-sm text-white">Bidzone Protection</h4>
+                <p className="text-xs text-neutral-400 mt-1">
                   Your funds are held in escrow until the asset transfer is complete and verified.
                 </p>
               </div>
-            </div>
-
-            <div className="pt-4 border-t border-emerald-100/50">
-              {!showInquiryInput ? (
-                <button 
-                  onClick={() => setShowInquiryInput(true)}
-                  className="w-full py-3 bg-white border border-emerald-200 rounded-xl text-emerald-700 text-sm font-bold flex items-center justify-center gap-2 hover:bg-emerald-100/50 transition-colors"
-                >
-                  <MessageSquare size={16} /> Message Institution
-                </button>
-              ) : (
-                <div className="space-y-3">
-                  <textarea 
-                    autoFocus
-                    placeholder="Ask a question about this asset..."
-                    className="w-full bg-white border border-emerald-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 h-24 resize-none"
-                    value={inquiryMessage}
-                    onChange={e => setInquiryMessage(e.target.value)}
-                  />
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => setShowInquiryInput(false)}
-                      className="flex-1 py-2 text-xs font-bold text-neutral-500"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      disabled={isInquiring || !inquiryMessage.trim()}
-                      onClick={handleSendInquiry}
-                      className="flex-2 btn-primary bg-emerald-600 px-6 py-2 text-xs flex items-center gap-2 disabled:opacity-50"
-                    >
-                      {inquirySuccess ? <Check size={14} /> : <Send size={14} />}
-                      {inquirySuccess ? "Sent!" : "Send Inquiry"}
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>

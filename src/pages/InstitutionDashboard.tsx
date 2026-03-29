@@ -50,6 +50,7 @@ export default function InstitutionDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [auctions, setAuctions] = useState<AuctionListing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const user = store.getUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -75,6 +76,11 @@ export default function InstitutionDashboard() {
 
   const isVerified = user?.isVerified;
   const myAuctions = auctions.filter(a => a.institutionId === user?.uid);
+
+  const filteredMyAuctions = myAuctions.filter(a => 
+    a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    a.assetType.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const totalRecovery = myAuctions.reduce((sum, a) => sum + (a.status === AuctionStatus.CLOSED ? a.currentBid : 0), 0);
   const totalBidsCount = myAuctions.reduce((sum, a) => sum + a.bidCount, 0);
@@ -278,6 +284,8 @@ export default function InstitutionDashboard() {
                     type="text"
                     placeholder="Search listings..."
                     className="bg-neutral-50 border border-neutral-200 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
               </div>
@@ -293,7 +301,7 @@ export default function InstitutionDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100">
-                    {myAuctions.slice(0, 5).map((auction) => (
+                    {filteredMyAuctions.slice(0, 5).map((auction) => (
                       <tr key={auction.id} className="hover:bg-neutral-50 transition-colors">
                         <td className="px-8 py-6">
                            <div className="flex items-center gap-4">
@@ -349,7 +357,7 @@ export default function InstitutionDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
-                  {myAuctions.map((auction) => (
+                  {filteredMyAuctions.map((auction) => (
                     <tr key={auction.id} className="hover:bg-neutral-50 transition-colors">
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">

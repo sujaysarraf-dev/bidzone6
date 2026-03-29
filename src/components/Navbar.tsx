@@ -13,25 +13,37 @@ import { store } from "../store";
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
 export default function Navbar() {
-  const location = useLocation();
-  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState(store.getUser());
+  const [stats, setStats] = useState(store.getStats());
+  const [searchQuery, setSearchQuery] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const handleUpdate = () => setUser(store.getUser());
+    const handleUpdate = () => {
+      setUser(store.getUser());
+      setStats(store.getStats());
+    };
     window.addEventListener('store-updated', handleUpdate);
     return () => window.removeEventListener('store-updated', handleUpdate);
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/auctions?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Auctions", path: "/auctions" },
     ...(user ? [
       { name: "Map View", path: "/auctions?view=map" },
-      { name: "Dashboard", path: "/dashboard" }
+      { name: "Dashboard", path: "/dashboard" },
+      ...(user.role === "Admin" ? [{ name: "Admin Panel", path: "/admin-dashboard" }] : [])
     ] : [
       { name: "How it Works", path: "/how-it-works" }
     ]),
@@ -69,18 +81,23 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-2 md:gap-4">
-        <div className="hidden sm:flex items-center bg-neutral-100 rounded-full px-3 py-1.5 gap-2 border border-neutral-200 focus-within:ring-2 focus-within:ring-neutral-900/10 transition-all">
+        <form onSubmit={handleSearch} className="hidden sm:flex items-center bg-neutral-100 rounded-full px-3 py-1.5 gap-2 border border-neutral-200 focus-within:ring-2 focus-within:ring-neutral-900/10 transition-all">
           <Search size={16} className="text-neutral-400" />
           <input 
             type="text" 
             placeholder="Search auctions..." 
             className="bg-transparent border-none outline-none text-sm w-32 md:w-48"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
+        </form>
 
-        <button className="p-2 text-neutral-500 hover:bg-neutral-100 rounded-full transition-colors relative">
+        <button 
+          onClick={() => navigate("/dashboard")}
+          className="p-2 text-neutral-500 hover:bg-neutral-100 rounded-full transition-colors relative"
+        >
           <Bell size={20} />
-          {user && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>}
+          {user && stats.notificationsCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>}
         </button>
 
         {user ? (
