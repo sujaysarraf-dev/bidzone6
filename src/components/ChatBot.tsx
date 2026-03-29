@@ -10,6 +10,8 @@ import { geminiService } from "../services/geminiService";
 import { clsx } from "clsx";
 import { useLocation } from "react-router-dom";
 import { store } from "../store";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Message {
   role: "user" | "bot";
@@ -149,10 +151,12 @@ export default function ChatBot() {
                         {m.role === "bot" ? <Bot size={16} /> : <User size={16} />}
                       </div>
                       <div className={clsx(
-                        "p-3 rounded-2xl text-sm leading-relaxed shadow-sm",
+                        "p-3 rounded-2xl text-sm leading-relaxed shadow-sm prose prose-sm max-w-none",
                         m.role === "bot" ? "bg-white border border-neutral-100" : "bg-neutral-900 text-white"
                       )}>
-                        {m.text}
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {m.text}
+                        </ReactMarkdown>
                       </div>
                     </div>
                   ))}

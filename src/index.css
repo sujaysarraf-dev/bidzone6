@@ -28,8 +28,33 @@
     @apply bg-white border border-neutral-200 text-neutral-900 px-6 py-2.5 rounded-xl font-medium transition-all hover:bg-neutral-50 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
   }
 
+
   .input-field {
     @apply w-full bg-white border border-neutral-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-900 transition-all;
+  }
+
+  .prose p {
+    @apply mb-2 last:mb-0;
+  }
+  
+  .prose strong {
+    @apply font-bold;
+  }
+  
+  .prose em {
+    @apply italic;
+  }
+  
+  .prose ul {
+    @apply list-disc list-inside mb-2;
+  }
+  
+  .prose li {
+    @apply mb-1;
+  }
+
+  .prose code {
+    @apply bg-neutral-100 px-1 rounded font-mono text-xs text-rose-500;
   }
 }
 
