@@ -52,8 +52,8 @@ export default function Navbar() {
 
   const isActive = (path: string) => location.pathname + location.search === path;
 
-  const handleLogout = () => {
-    store.logout();
+  const handleLogout = async () => {
+    await store.logout();
     navigate("/");
   };
 

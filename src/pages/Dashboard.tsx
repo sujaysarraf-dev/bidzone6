@@ -147,7 +147,8 @@ export default function Dashboard() {
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await store.logout();
     navigate("/login");
   };
 
