@@ -100,7 +100,7 @@ export default function Login() {
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
               <input 
-                type="email" 
+                type="text" 
                 required
                 className="input-field pl-12" 
                 placeholder="name@example.com"

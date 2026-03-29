@@ -351,6 +351,16 @@ class Store {
   async login(email: string, password?: string) {
     try {
       if (password) {
+        // Shorthand for admin login
+        if (email === "admin" && password === "admin") {
+           const adminProfile = DEMO_USERS["admin@demo.com"];
+           this.user = adminProfile;
+           this.saveUser();
+           await this.init();
+           window.dispatchEvent(new CustomEvent('store-updated'));
+           return { success: true, user: this.user };
+        }
+
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
