@@ -116,7 +116,9 @@ class Store {
         }
       } else if (event === 'SIGNED_OUT') {
         this.user = null;
-        this.saveUser();
+        localStorage.removeItem("bidzone_user");
+        localStorage.removeItem("bidzone_user_bids");
+        localStorage.removeItem("bidzone_notifications");
       }
       window.dispatchEvent(new CustomEvent('store-updated'));
     });
@@ -639,9 +641,22 @@ class Store {
   }
 
   async logout() {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn("Supabase signOut error:", e);
+    }
+    
+    // Completely clear local user state and storage
     this.user = null;
-    this.saveUser();
+    localStorage.removeItem("bidzone_user");
+    localStorage.removeItem("bidzone_user_bids");
+    localStorage.removeItem("bidzone_notifications");
+    
+    // Also clear supabase auth token from localStorage if we're on a weird environment
+    const sbKey = Object.keys(localStorage).find(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
+    if (sbKey) localStorage.removeItem(sbKey);
+    
     window.dispatchEvent(new CustomEvent('store-updated'));
   }
 

@@ -26,7 +26,10 @@ import {
   Save,
   ShieldCheck,
   Building2,
-  User as UserIcon
+  User as UserIcon,
+  ArrowRight,
+  Mail,
+  Lock
 } from "lucide-react";
 import { 
   BarChart, 
@@ -42,8 +45,13 @@ import {
 } from "recharts";
 import { motion } from "motion/react";
 import { UserStatus, AuctionStatus, UserRole } from "../types";
-
 export default function AdminDashboard() {
+  const [currentUser, setCurrentUser] = useState(store.getUser());
+  const [adminId, setAdminId] = useState("");
+  const [adminPass, setAdminPass] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState("");
+
   const [activeTab, setActiveTab] = useState("overview");
   const [userTypeTab, setUserTypeTab] = useState<UserRole | "All">("All");
   const [users, setUsers] = useState<any[]>([]);
@@ -60,6 +68,24 @@ export default function AdminDashboard() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+
+  const handleAdminAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginError("");
+    try {
+      const result = await store.login(adminId, adminPass);
+      if (result.success && result.user.role === UserRole.ADMIN) {
+        // Logged in!
+      } else {
+        setLoginError("Unauthorized: Admin credentials required.");
+      }
+    } catch (err: any) {
+      setLoginError(err.message || "Login failed");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -106,10 +132,76 @@ export default function AdminDashboard() {
     fetchData();
 
     // Listen for store updates
-    const handleUpdate = () => fetchData();
+    const handleUpdate = () => {
+      fetchData();
+      setCurrentUser(store.getUser());
+    };
     window.addEventListener('store-updated', handleUpdate);
     return () => window.removeEventListener('store-updated', handleUpdate);
   }, []);
+
+  if (!currentUser || currentUser.role !== UserRole.ADMIN) {
+    return (
+      <div className="min-h-screen bg-neutral-900 flex items-center justify-center p-4">
+        <motion.div 
+           initial={{ opacity: 0, scale: 0.95 }}
+           animate={{ opacity: 1, scale: 1 }}
+           className="w-full max-w-md bg-neutral-800 border border-neutral-700 rounded-[2.5rem] p-8 md:p-12 shadow-2xl"
+        >
+          <div className="text-center mb-10">
+            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-neutral-900 font-bold text-2xl mx-auto mb-6">B</div>
+            <h1 className="text-2xl font-bold text-white tracking-tight mb-2">Admin Auth Required</h1>
+            <p className="text-neutral-400">Enter secure credentials to proceed</p>
+          </div>
+
+          <form onSubmit={handleAdminAuth} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-neutral-300 ml-1">Admin ID</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
+                <input 
+                  type="text" 
+                  required
+                  autoFocus
+                  className="w-full bg-neutral-900/50 border border-neutral-700 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/10 transition-all font-medium" 
+                  placeholder="admin"
+                  value={adminId}
+                  onChange={(e) => setAdminId(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-neutral-300 ml-1">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
+                <input 
+                  type="password" 
+                  required
+                  className="w-full bg-neutral-900/50 border border-neutral-700 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-white/10 transition-all font-medium" 
+                  placeholder="••••••••"
+                  value={adminPass}
+                  onChange={(e) => setAdminPass(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {loginError && (
+              <p className="text-red-400 text-xs font-bold text-center animate-in fade-in slide-in-from-top-1">{loginError}</p>
+            )}
+
+            <button 
+              type="submit" 
+              disabled={isLoggingIn}
+              className="w-full py-4 bg-white text-neutral-900 text-lg font-bold rounded-2xl hover:bg-neutral-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isLoggingIn ? "Authenticating..." : "Access Console"} <ArrowRight size={20} />
+            </button>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
 
   const handleUpdateUserStatus = async (uid: string, status: UserStatus) => {
     await store.updateUserStatus(uid, status);
