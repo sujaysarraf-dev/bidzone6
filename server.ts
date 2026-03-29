@@ -11,8 +11,10 @@ dotenv.config();
 // AI Assistant - Gemini Configuration
 const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const aiModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-console.log("AI: Configured with Gemini 2.0 Flash");
+// Using Gemma 3 model which typically has higher free-tier availability in 2026
+const aiModel = genAI.getGenerativeModel({ model: "gemma-3-27b-it" });
+const fallbackModel = genAI.getGenerativeModel({ model: "gemma-3-12b-it" });
+console.log("AI: Configured with Gemma 3 27B (Free Tier Opt)");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,22 +58,33 @@ async function startServer() {
     try {
       const systemPrompt = `You are the Bidzone Assistant. You help users navigate an intelligent financial asset auction platform in Nepal. Be professional, helpful, and concise. ${context ? `Context: ${context}` : ""}`;
       
-      const result = await aiModel.generateContent([
-        { text: systemPrompt },
-        { text: message }
-      ]);
-      
-      const response = await result.response;
-      const text = response.text();
+      let text = "";
+      try {
+        const result = await aiModel.generateContent([
+          { text: systemPrompt },
+          { text: message }
+        ]);
+        const response = await result.response;
+        text = response.text();
+      } catch (innerError: any) {
+        console.warn("Primary AI Model Failed, trying fallback...", innerError.message);
+        // Fallback to smaller Gemma model if primary fails (rate limited)
+        const result = await fallbackModel.generateContent([
+          { text: systemPrompt },
+          { text: message }
+        ]);
+        const response = await result.response;
+        text = response.text();
+      }
       
       if (!text) {
-        return res.json({ reply: "I'm sorry, I couldn't generate a response." });
+        return res.json({ reply: "I'm sorry, I couldn't generate a response. Please try again in a few moments." });
       }
 
       res.json({ reply: text });
     } catch (error: any) {
-      console.error("Gemini API Error:", error);
-      res.json({ reply: "I'm sorry, I'm having trouble right now. (" + (error.message || "Server error") + ")" });
+      console.error("AI API Error:", error);
+      res.json({ reply: "I'm sorry, the AI service hit a rate limit. Please try again shortly or contact support if the issue persists." });
     }
   });
 
