@@ -40,10 +40,11 @@ export default function Navbar() {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Auctions", path: "/auctions" },
+    { name: "Help", path: "/help" },
     ...(user ? [
       { name: "Map View", path: "/auctions?view=map" },
       { name: "Dashboard", path: "/dashboard" },
-      ...(user.role === "Admin" ? [{ name: "Admin Panel", path: "/admin-dashboard" }] : [])
+      ...(user.role === "Admin" ? [{ name: "Admin Panel", path: "/admin" }] : [])
     ] : [
       { name: "How it Works", path: "/how-it-works" }
     ]),

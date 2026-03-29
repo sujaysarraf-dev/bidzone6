@@ -154,7 +154,7 @@ export default function AdminDashboard() {
     if (result.success) {
       setResettingPassword(null);
       setNewPassword("");
-      setFeedback({ type: 'success', text: "Password reset successfully" });
+      setFeedback({ type: 'success', text: result.message || "Password reset successfully" });
     } else {
       setFeedback({ type: 'error', text: result.message || "Failed to reset password" });
     }

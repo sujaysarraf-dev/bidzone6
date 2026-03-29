@@ -14,10 +14,11 @@ import InstitutionDashboard from "./pages/InstitutionDashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
-import AdminDashboard from "./pages/AdminDashboard";
 import CreateAuction from "./pages/CreateAuction";
 import EditAuction from "./pages/EditAuction";
 import ChatBot from "./components/ChatBot";
+import Help from "./pages/Help";
+import AdminDashboard from "./pages/AdminDashboard";
 
 // Placeholder components for now
 const NotFound = () => <div className="p-8"><h1>404 - Not Found</h1></div>;
@@ -86,6 +87,7 @@ export default function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/create-auction" element={<CreateAuction />} />
             <Route path="/auctions/:id/edit" element={<EditAuction />} />
+            <Route path="/help" element={<Help />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

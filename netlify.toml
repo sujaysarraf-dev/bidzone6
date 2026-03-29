@@ -12,6 +12,16 @@
   status = 200
 
 [[redirects]]
+  from = "/api/admin/reset-password"
+  to = "/.netlify/functions/admin-password"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin/delete-user"
+  to = "/.netlify/functions/admin-delete-user"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

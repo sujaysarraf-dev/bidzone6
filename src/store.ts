@@ -536,9 +536,9 @@ class Store {
     const user = this.users.find(u => u.uid === uid);
     if (user) {
       try {
-        await profileService.resetPassword(uid, newPassword);
+        const result = await profileService.resetPassword(uid, newPassword);
         this.addAuditLog("Password Reset", `Password reset for user ${user.displayName} (${user.email})`);
-        return { success: true };
+        return result;
       } catch (error: any) {
         console.error("Failed to reset password:", error);
         return { success: false, message: error.message };

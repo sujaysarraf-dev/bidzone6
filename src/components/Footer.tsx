@@ -45,8 +45,9 @@ export default function Footer() {
             <ul className="space-y-4">
               <li><Link to="/auctions" className="text-neutral-400 hover:text-emerald-400 transition-colors text-sm">Browse Auctions</Link></li>
               <li><Link to="/how-it-works" className="text-neutral-400 hover:text-emerald-400 transition-colors text-sm">How It Works</Link></li>
+              <li><Link to="/help" className="text-neutral-400 hover:text-emerald-400 transition-colors text-sm">Project Info (Help)</Link></li>
               <li><Link to="/dashboard" className="text-neutral-400 hover:text-emerald-400 transition-colors text-sm">User Dashboard</Link></li>
-              <li><Link to="/admin-dashboard" className="text-neutral-400 hover:text-emerald-400 transition-colors text-sm">Admin Panel</Link></li>
+              <li><Link to="/admin" className="text-neutral-400 hover:text-emerald-400 transition-colors text-sm">Admin Panel</Link></li>
               <li><Link to="/about" className="text-neutral-400 hover:text-emerald-400 transition-colors text-sm">About Us</Link></li>
             </ul>
           </div>

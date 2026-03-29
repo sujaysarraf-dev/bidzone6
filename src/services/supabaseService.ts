@@ -333,17 +333,18 @@ export const profileService = {
     }
   },
 
-  async resetPassword(userId: string, newPassword: string): Promise<void> {
+  async resetPassword(userId: string, newPassword: string): Promise<{ success: true, message: string }> {
     const response = await fetch('/api/admin/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, newPassword }),
     });
     
+    const data = await response.json();
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to reset password');
+      throw new Error(data.error || 'Failed to reset password');
     }
+    return data;
   }
 };
 
@@ -382,11 +383,6 @@ export const storageService = {
   async uploadImage(file: File, path: string): Promise<string> {
     const sanitizedPath = path.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
     const fileName = `${Date.now()}_${sanitizedPath}`;
-
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error("You must be logged in to upload files.");
-    }
 
     const { data, error } = await supabase.storage
       .from('photos')

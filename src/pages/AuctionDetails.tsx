@@ -377,10 +377,6 @@ export default function AuctionDetails() {
                 </motion.div>
               )}
 
-              <p className="text-[10px] text-center text-neutral-400 uppercase font-bold tracking-widest">
-                By bidding, you agree to our Terms of Service
-              </p>
-              
               <div className="pt-6 border-t border-neutral-100">
                 {!showInquiryInput ? (
                   <button 
@@ -418,10 +414,13 @@ export default function AuctionDetails() {
                   </div>
                 )}
               </div>
+              <p className="mt-4 text-[10px] text-center text-neutral-400 uppercase font-bold tracking-widest">
+                By bidding, you agree to our Terms of Service
+              </p>
             </div>
 
-            <div className="mt-8 pt-8 border-t border-neutral-100">
-              <h4 className="font-bold text-sm mb-4 flex items-center gap-2">
+            <div className="mt-6 pt-6 border-t border-neutral-100">
+              <h4 className="font-bold text-sm mb-4 flex items-center gap-2 text-neutral-900">
                 <History size={16} /> Recent Bids
               </h4>
               <div className="space-y-4">
@@ -444,21 +443,6 @@ export default function AuctionDetails() {
                     No bids placed yet. Be the first to bid!
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-neutral-900 border border-neutral-800 rounded-[2rem] p-6 space-y-4 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
-            <div className="flex gap-4 relative z-10">
-              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-emerald-400 flex-shrink-0">
-                <ShieldCheck size={20} />
-              </div>
-              <div>
-                <h4 className="font-bold text-sm text-white">Bidzone Protection</h4>
-                <p className="text-xs text-neutral-400 mt-1">
-                  Your funds are held in escrow until the asset transfer is complete and verified.
-                </p>
               </div>
             </div>
           </div>
