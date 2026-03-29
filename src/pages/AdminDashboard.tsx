@@ -147,18 +147,33 @@ export default function AdminDashboard() {
   const handleResetPassword = async () => {
     if (!resettingPassword || !newPassword) return;
     
+    // Safety: Find user name for the logs/toast
+    const targetUser = users.find(u => u.uid === resettingPassword);
+    if (!targetUser) {
+      setFeedback({ type: 'error', text: "Target user not found" });
+      return;
+    }
+
     setIsResetting(true);
+    console.log(`[Admin] Initiating password reset for UID: ${resettingPassword} (${targetUser.email})`);
+    
     const result = await store.resetUserPassword(resettingPassword, newPassword);
     setIsResetting(false);
     
     if (result.success) {
       setResettingPassword(null);
       setNewPassword("");
-      setFeedback({ type: 'success', text: result.message || "Password reset successfully" });
+      setFeedback({ 
+        type: 'success', 
+        text: result.message || `Password reset for ${targetUser.displayName} successful` 
+      });
     } else {
-      setFeedback({ type: 'error', text: result.message || "Failed to reset password" });
+      setFeedback({ 
+        type: 'error', 
+        text: result.message || "Failed to reset password" 
+      });
     }
-    setTimeout(() => setFeedback(null), 3000);
+    setTimeout(() => setFeedback(null), 5000);
   };
 
   const handleExportLogs = () => {
