@@ -264,6 +264,17 @@ export const profileService = {
     return mapProfile(data);
   },
 
+  async getProfileByEmail(email: string): Promise<UserProfile | null> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', email)
+      .single();
+    
+    if (error) return null;
+    return mapProfile(data);
+  },
+
   async updateProfile(id: string, profile: Partial<UserProfile>): Promise<void> {
     const updateData: any = {};
     if (profile.displayName) updateData.display_name = profile.displayName;

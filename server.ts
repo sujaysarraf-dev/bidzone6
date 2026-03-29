@@ -4,13 +4,15 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 dotenv.config();
 
-// OpenRouter AI - server-side proxy
-const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || "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";
-const OPENROUTER_MODEL = "openai/gpt-oss-120b:free";
-console.log("OpenRouter AI: Configured with model", OPENROUTER_MODEL);
+// AI Assistant - Gemini Configuration
+const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY || "";
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const aiModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+console.log("AI: Configured with Gemini 2.0 Flash");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,40 +44,33 @@ async function startServer() {
     res.json({ status: "ok", message: "Bidzone API is running", ai: true });
   });
 
-  // AI Chat endpoint - proxies through OpenRouter server-side
+  // AI Chat endpoint - direct Gemini integration
   app.post("/api/chat", async (req, res) => {
     const { message, context } = req.body;
     if (!message) return res.status(400).json({ error: "Message is required" });
 
+    if (!GEMINI_API_KEY) {
+      return res.json({ reply: "I'm sorry, the AI service is not configured (API key missing)." });
+    }
+
     try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${OPENROUTER_KEY}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "http://localhost:3000",
-          "X-Title": "Bidzone"
-        },
-        body: JSON.stringify({
-          model: OPENROUTER_MODEL,
-          messages: [
-            { role: "system", content: `You are the Bidzone Assistant. You help users navigate an intelligent financial asset auction platform in Nepal. Be professional, helpful, and concise. ${context ? `Context: ${context}` : ""}` },
-            { role: "user", content: message }
-          ]
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || data.error) {
-        console.error("OpenRouter API Error:", data.error);
-        return res.json({ reply: "I'm sorry, the AI service returned an error: " + (data.error?.message || "Unknown error") });
+      const systemPrompt = `You are the Bidzone Assistant. You help users navigate an intelligent financial asset auction platform in Nepal. Be professional, helpful, and concise. ${context ? `Context: ${context}` : ""}`;
+      
+      const result = await aiModel.generateContent([
+        { text: systemPrompt },
+        { text: message }
+      ]);
+      
+      const response = await result.response;
+      const text = response.text();
+      
+      if (!text) {
+        return res.json({ reply: "I'm sorry, I couldn't generate a response." });
       }
 
-      const text = data.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
       res.json({ reply: text });
     } catch (error: any) {
-      console.error("OpenRouter API Error:", error);
+      console.error("Gemini API Error:", error);
       res.json({ reply: "I'm sorry, I'm having trouble right now. (" + (error.message || "Server error") + ")" });
     }
   });

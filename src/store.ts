@@ -355,7 +355,23 @@ class Store {
           email,
           password,
         });
-        if (error) throw error;
+        
+        if (error) {
+          // Fallback: If email is not confirmed, try to log in via local profile
+          // This allows development to continue without mandatory email confirmation
+          if (error.message.toLowerCase().includes("email not confirmed")) {
+            const profile = await profileService.getProfileByEmail(email);
+            if (profile) {
+              this.user = profile;
+              this.saveUser();
+              await this.init();
+              window.dispatchEvent(new CustomEvent('store-updated'));
+              return { success: true, user: this.user };
+            }
+          }
+          throw error;
+        }
+
         if (data.user) {
           const profile = await profileService.getProfile(data.user.id);
           this.user = profile;

@@ -32,6 +32,8 @@ CREATE TABLE auctions (
   institution_name TEXT NOT NULL,
   images TEXT[] DEFAULT '{}',
   documents JSONB DEFAULT '[]',
+  likes_count INTEGER DEFAULT 0,
+  shares_count INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
@@ -112,3 +114,55 @@ CREATE POLICY "Buyers can view their own inquiries" ON inquiries FOR SELECT USIN
 CREATE POLICY "Institutions can view inquiries for their auctions" ON inquiries FOR SELECT USING (auth.uid() = institution_id);
 CREATE POLICY "Buyers can create inquiries" ON inquiries FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "Institutions can reply to inquiries" ON inquiries FOR UPDATE USING (auth.uid() = institution_id);
+
+-- Likes table
+CREATE TABLE IF NOT EXISTS likes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  auction_id UUID REFERENCES auctions ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  UNIQUE(auction_id, user_id)
+);
+
+ALTER TABLE likes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Likes are viewable by everyone" ON likes FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can like auctions" ON likes FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Users can unlike their own likes" ON likes FOR DELETE USING (auth.uid() = user_id);
+
+-- RPC Functions for counters
+CREATE OR REPLACE FUNCTION increment_bid(a_id UUID, new_amount NUMERIC)
+RETURNS void AS $$
+BEGIN
+  UPDATE auctions
+  SET current_bid = new_amount,
+      bid_count = bid_count + 1
+  WHERE id = a_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION increment_likes(a_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE auctions
+  SET likes_count = COALESCE(likes_count, 0) + 1
+  WHERE id = a_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION decrement_likes(a_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE auctions
+  SET likes_count = GREATEST(0, COALESCE(likes_count, 0) - 1)
+  WHERE id = a_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION increment_shares(a_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE auctions
+  SET shares_count = COALESCE(shares_count, 0) + 1
+  WHERE id = a_id;
+END;
+$$ LANGUAGE plpgsql;

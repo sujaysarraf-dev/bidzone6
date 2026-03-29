@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS auctions (
   institution_name TEXT NOT NULL,
   images TEXT[] DEFAULT '{}',
   documents JSONB DEFAULT '[]',
+  likes_count INTEGER DEFAULT 0,
+  shares_count INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -91,3 +93,62 @@ VALUES
   ('30eebc99-9c0b-4ef8-bb6d-6bb9bd380a25', 'Luxury Apartment in Sanepa', '3 BHK luxury apartment with modern amenities. 1800 sq. ft. area, 5th floor.', 'Real Estate', 35000000, 38000000, 36000000, 20, NOW(), NOW() + INTERVAL '10 days', 'Active', 'Sanepa, Lalitpur', 27.6784, 85.3012, 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'NIC Asia Bank', ARRAY['https://picsum.photos/seed/realestate2/800/600'], '[{"name": "Ownership Certificate", "url": "#"}]'::jsonb),
   ('40eebc99-9c0b-4ef8-bb6d-6bb9bd380a26', 'Excavator - Caterpillar 320D', 'Heavy-duty excavator, 2019 model. 4500 hours of operation. Ready for construction projects.', 'Machinery', 8500000, 9000000, 8700000, 3, NOW(), NOW() + INTERVAL '4 days', 'Active', 'Butwal, Rupandehi', 27.7006, 83.4484, 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'Nabil Bank', ARRAY['https://picsum.photos/seed/machinery2/800/600'], '[{"name": "Maintenance Log", "url": "#"}]'::jsonb)
 ON CONFLICT (id) DO NOTHING;
+
+-- 5. Inquiries Table
+CREATE TABLE IF NOT EXISTS inquiries (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  auction_id UUID REFERENCES auctions ON DELETE CASCADE NOT NULL,
+  auction_title TEXT NOT NULL,
+  buyer_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  buyer_name TEXT NOT NULL,
+  institution_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  message TEXT NOT NULL,
+  status TEXT DEFAULT 'Pending' CHECK (status IN ('Pending', 'Replied', 'Closed')),
+  reply_text TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. Likes Table
+CREATE TABLE IF NOT EXISTS likes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  auction_id UUID REFERENCES auctions ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(auction_id, user_id)
+);
+
+-- 7. Audit Logs Table
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  action TEXT NOT NULL,
+  details TEXT,
+  timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Additional RPC Functions
+CREATE OR REPLACE FUNCTION increment_likes(a_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE auctions
+  SET likes_count = COALESCE(likes_count, 0) + 1
+  WHERE id = a_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION decrement_likes(a_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE auctions
+  SET likes_count = GREATEST(0, COALESCE(likes_count, 0) - 1)
+  WHERE id = a_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION increment_shares(a_id UUID)
+RETURNS void AS $$
+BEGIN
+  UPDATE auctions
+  SET shares_count = COALESCE(shares_count, 0) + 1
+  WHERE id = a_id;
+END;
+$$ LANGUAGE plpgsql;
